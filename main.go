@@ -46,7 +46,7 @@ func main() {
 					// fmt.Print(c.Args()[0])
 					client.Client(c.Args()[0])
 				} else {
-					fmt.Print("Please specify IP")
+					fmt.Print("Please specify IP:PORT")
 				}
 				return nil
 			},

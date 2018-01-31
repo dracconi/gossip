@@ -4,35 +4,46 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"os"
+
+	"github.com/dracconi/gossip/handler"
+	tui "github.com/marcusolsson/tui-go"
 )
 
-type server struct {
-	conn net.Conn
+var srv handler.Server
+
+func closeConn(conn net.Conn) {
+	conn.Close()
 }
 
-var srv server
-
-func fetchMsgs(conn net.Conn) {
+// Loop that fetches messages
+func fetchMsg(conn net.Conn, list *tui.List, scroll *tui.ScrollArea) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
 
-		fmt.Println(msg)
+		list.AddItems(msg)
+		// scroll.Scroll(0, 1)
 	}
+}
+
+// SendMsg Function that writes messages to the server
+func sendMsg(conn net.Conn, msg string) {
+	conn.Write([]byte(msg + "\n"))
 }
 
 // Client compartment
 func Client(ipaddr string) {
 	fmt.Println("works client async")
-	srv.conn, _ = net.Dial("tcp", ipaddr)
+	srv.Conn, _ = net.Dial("tcp", ipaddr)
 
-	srv.conn.Write([]byte("Hello! \n"))
+	srv.Conn.Write([]byte("Hello! \n"))
 
-	go fetchMsgs(srv.conn)
+	renderUI(ipaddr)
 
-	for {
-		send, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	// go fetchMsgs(srv.Conn)
 
-		srv.conn.Write([]byte(send))
-	}
+	// for {
+	// 	send, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+
+	// 	srv.Conn.Write([]byte(send))
+	// }
 }

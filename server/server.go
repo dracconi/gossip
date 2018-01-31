@@ -18,6 +18,10 @@ func broadcast(conns []net.Conn, msg string) {
 func handleConnection(conn net.Conn) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
+		if msg == "_CLOSE" {
+			conn.Close()
+			break
+		}
 		fmt.Println("[" + time.Now().Format("15:04:05") + "] <" + conn.RemoteAddr().String() + ">: " + msg)
 
 		// conn.Write([]byte("[" + time.Now().Format("15:04:05") + "] <" + conn.RemoteAddr().String() + ">: " + msg))
