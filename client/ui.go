@@ -63,12 +63,16 @@ func renderUI(ip string) {
 	// ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, 1) })
 	ui.SetKeybinding("Up", func() {
 		messages.SetSelected(messages.Selected() - 1)
-		scrollbar.Scroll(0, 1)
+
 	})
 	// ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, -1) })
 	ui.SetKeybinding("Down", func() {
-		messages.SetSelected(messages.Selected() + 1)
-		scrollbar.Scroll(0, -1)
+		if messages.Length() >= messages.Selected()+2 {
+			messages.Select(messages.Selected() + 1)
+			if messages.Selected() == messages.Length() && messages.Length() > scrollbar.Size().Y {
+				scrollbar.Scroll(0, -1)
+			}
+		}
 	})
 	if err := ui.Run(); err != nil {
 		panic(err)
