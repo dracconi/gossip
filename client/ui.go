@@ -3,7 +3,6 @@ package client
 import (
 	"strconv"
 
-	"github.com/dracconi/gossip/handler"
 	tui "github.com/marcusolsson/tui-go"
 )
 
@@ -11,6 +10,10 @@ var ui tui.UI
 
 // RenderUI hi
 func renderUI(ip string) {
+
+	t := tui.NewTheme()
+	normal := tui.Style{Bg: tui.ColorWhite, Fg: tui.ColorBlack}
+	t.SetStyle("normal", normal)
 
 	uinput := tui.NewEntry()
 	uinput.SetFocused(true)
@@ -27,8 +30,12 @@ func renderUI(ip string) {
 
 	scrollbar := tui.NewScrollArea(messages)
 
+	statusbar := tui.NewStatusBar("Hello this is test")
+	statusbar.SetStyleName("warning")
+
 	messagesbox := tui.NewVBox(
 		// messages,
+		statusbar,
 		scrollbar,
 	)
 	messagesbox.SetSizePolicy(tui.Expanding, tui.Expanding)
@@ -73,16 +80,18 @@ func renderUI(ip string) {
 		panic(err)
 	}
 
+	ui.SetTheme(t)
+
 	ui.SetKeybinding("Ctrl+C", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
 	// ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, 1) })
 	ui.SetKeybinding("Up", func() {
-		if messages.Selected() != 0 {
+		if messages.Selected() >= 0 {
 			messages.Select(messages.Selected() - 1)
-			if handler.Abs(messages.Selected()-messages.Length()) == messages.Selected()+1 {
+			if -(messages.Selected()-messages.Length())-1 == messages.Selected() && messages.Length() > scrollbar.Size().Y {
 				scrollbar.Scroll(0, -1)
 			}
 		} else {
-			messages.Select(0)
+			messages.Select(messages.Length() - 1)
 		}
 		sd.SetText("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
 		msgd.SetText("Messages" + strconv.Itoa(messages.Size().Y))
