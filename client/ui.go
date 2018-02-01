@@ -7,10 +7,15 @@ import (
 // RenderUI hi
 func renderUI(ip string) {
 
-	box := tui.NewVBox()
+	sidebar := tui.NewVBox(
+		tui.NewLabel("Connected"),
+		tui.NewButton(ip),
+		tui.NewSpacer(),
+	)
 
-	box.SetBorder(true)
-	box.SetTitle(ip)
+	sidebar.SetBorder(true)
+
+	sidebar.SetSizePolicy(tui.Maximum, tui.Minimum)
 
 	uinput := tui.NewEntry()
 	uinput.SetFocused(true)
@@ -27,7 +32,7 @@ func renderUI(ip string) {
 
 	scrollbar := tui.NewScrollArea(messages)
 
-	messagesbox := tui.NewHBox(
+	messagesbox := tui.NewVBox(
 		// messages,
 		scrollbar,
 	)
@@ -36,7 +41,7 @@ func renderUI(ip string) {
 	messagesbox.SetBorder(true)
 
 	wrapper := tui.NewHBox(
-		box,
+		sidebar,
 		tui.NewVBox(
 			messagesbox,
 			inputbox,
@@ -45,7 +50,6 @@ func renderUI(ip string) {
 
 	uinput.OnSubmit(func(e *tui.Entry) {
 		sendMsg(srv.Conn, e.Text())
-		// e.SetText("")
 	})
 
 	go fetchMsg(srv.Conn, messages, scrollbar)
@@ -54,10 +58,18 @@ func renderUI(ip string) {
 	if err != nil {
 		panic(err)
 	}
-	ui.SetKeybinding("Esc", func() { sendMsg(srv.Conn, "_CLOSE\n"); closeConn(srv.Conn); ui.Quit() })
-	ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, 1) })
-	ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, -1) })
 
+	ui.SetKeybinding("Esc", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
+	// ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, 1) })
+	ui.SetKeybinding("Up", func() {
+		messages.SetSelected(messages.Selected() - 1)
+		scrollbar.Scroll(0, 1)
+	})
+	// ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, -1) })
+	ui.SetKeybinding("Down", func() {
+		messages.SetSelected(messages.Selected() + 1)
+		scrollbar.Scroll(0, -1)
+	})
 	if err := ui.Run(); err != nil {
 		panic(err)
 	}

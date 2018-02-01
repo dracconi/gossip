@@ -18,7 +18,7 @@ func broadcast(conns []net.Conn, msg string) {
 func handleConnection(conn net.Conn) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
-		if msg == "_CLOSE" {
+		if msg == "_CLOSE\n" {
 			conn.Close()
 			break
 		}
