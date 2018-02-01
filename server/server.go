@@ -9,7 +9,7 @@ import (
 
 var conns []net.Conn
 
-func broadcast(conns []net.Conn, msg string) {
+func broadcast(msg string) {
 	for _, conn := range conns {
 		conn.Write([]byte(msg))
 	}
@@ -19,13 +19,20 @@ func handleConnection(conn net.Conn) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
 		if msg == "_CLOSE\n" {
+			// for i, v := range conns {
+			// 	if v == conn {
+			// 		conns = append(conns[:i], conns[i+1:]...)
+			// 		break
+			// 	}
+			// }
+			broadcast("* disconnected " + conn.RemoteAddr().String() + "\n")
 			conn.Close()
 			break
 		}
 		fmt.Println("[" + time.Now().Format("15:04:05") + "] <" + conn.RemoteAddr().String() + ">: " + msg)
 
 		// conn.Write([]byte("[" + time.Now().Format("15:04:05") + "] <" + conn.RemoteAddr().String() + ">: " + msg))
-		broadcast(conns, "["+time.Now().Format("15:04:05")+"] <"+conn.RemoteAddr().String()+">: "+msg)
+		broadcast("[" + time.Now().Format("15:04:05") + "] <" + conn.RemoteAddr().String() + ">: " + msg)
 	}
 }
 
@@ -45,7 +52,11 @@ func Server(port string) {
 		}
 		conns = append(conns, conn)
 
-		broadcast(conns, "* connected "+conn.RemoteAddr().String()+"\n")
+		for _, v := range conns {
+			fmt.Println(v.RemoteAddr().String())
+		}
+
+		broadcast("* connected " + conn.RemoteAddr().String() + "\n")
 		go handleConnection(conn)
 	}
 

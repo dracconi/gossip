@@ -1,21 +1,16 @@
 package client
 
 import (
+	"strconv"
+
+	"github.com/dracconi/gossip/handler"
 	tui "github.com/marcusolsson/tui-go"
 )
 
+var ui tui.UI
+
 // RenderUI hi
 func renderUI(ip string) {
-
-	sidebar := tui.NewVBox(
-		tui.NewLabel("Connected"),
-		tui.NewButton(ip),
-		tui.NewSpacer(),
-	)
-
-	sidebar.SetBorder(true)
-
-	sidebar.SetSizePolicy(tui.Maximum, tui.Minimum)
 
 	uinput := tui.NewEntry()
 	uinput.SetFocused(true)
@@ -40,6 +35,25 @@ func renderUI(ip string) {
 
 	messagesbox.SetBorder(true)
 
+	sd := tui.NewLabel("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
+	msgd := tui.NewLabel("Messages" + strconv.Itoa(messages.Size().Y))
+	msgbd := tui.NewLabel("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
+
+	sidebar := tui.NewVBox(
+		tui.NewLabel("Connected"),
+		tui.NewButton(ip),
+		tui.NewSpacer(),
+		tui.NewLabel("-DEBUG-"),
+		tui.NewSpacer(),
+		sd,
+		msgd,
+		msgbd,
+	)
+
+	sidebar.SetBorder(true)
+
+	sidebar.SetSizePolicy(tui.Maximum, tui.Minimum)
+
 	wrapper := tui.NewHBox(
 		sidebar,
 		tui.NewVBox(
@@ -59,11 +73,20 @@ func renderUI(ip string) {
 		panic(err)
 	}
 
-	ui.SetKeybinding("Esc", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
+	ui.SetKeybinding("Ctrl+C", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
 	// ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, 1) })
 	ui.SetKeybinding("Up", func() {
-		messages.SetSelected(messages.Selected() - 1)
-
+		if messages.Selected() != 0 {
+			messages.Select(messages.Selected() - 1)
+			if handler.Abs(messages.Selected()-messages.Length()) == messages.Selected()+1 {
+				scrollbar.Scroll(0, -1)
+			}
+		} else {
+			messages.Select(0)
+		}
+		sd.SetText("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
+		msgd.SetText("Messages" + strconv.Itoa(messages.Size().Y))
+		msgbd.SetText("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
 	})
 	// ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, -1) })
 	ui.SetKeybinding("Down", func() {
@@ -73,7 +96,11 @@ func renderUI(ip string) {
 				scrollbar.Scroll(0, -1)
 			}
 		}
+		sd.SetText("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
+		msgd.SetText("Messages" + strconv.Itoa(messages.Size().Y))
+		msgbd.SetText("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
 	})
+
 	if err := ui.Run(); err != nil {
 		panic(err)
 	}
