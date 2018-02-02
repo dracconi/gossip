@@ -16,7 +16,7 @@ func closeConn(conn net.Conn) {
 }
 
 // Loop that fetches messages
-func fetchMsg(conn net.Conn, list *tui.List, scroll *tui.ScrollArea) {
+func fetchMsg(conn net.Conn, list *tui.List, scroll *scrollArea) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
 
