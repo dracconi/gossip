@@ -33,16 +33,9 @@ func sendMsg(conn net.Conn, msg string) {
 func Client(ipaddr string) {
 	fmt.Println("works client async")
 	srv.Conn, _ = net.Dial("tcp", ipaddr)
-
-	srv.Conn.Write([]byte("Hello! \n"))
-
-	renderUI(ipaddr)
-
-	// go fetchMsgs(srv.Conn)
-
-	// for {
-	// 	send, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-
-	// 	srv.Conn.Write([]byte(send))
-	// }
+	if srv.Conn != nil {
+		renderUI(ipaddr)
+	} else {
+		fmt.Println("Specified IP is not available.")
+	}
 }
