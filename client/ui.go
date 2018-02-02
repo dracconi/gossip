@@ -1,10 +1,20 @@
 package client
 
 import (
-	"strconv"
-
 	tui "github.com/marcusolsson/tui-go"
 )
+
+// type messagesList struct {
+// 	*tui.Table
+// }
+
+// func (tab *messagesList) appendMsg(msg string) {
+// 	tab.AppendRow(
+// 		tui.NewHBox(
+// 			tui.NewLabel(msg),
+// 		),
+// 	)
+// }
 
 type selectWidget interface {
 	tui.Widget
@@ -66,10 +76,6 @@ var ui tui.UI
 // RenderUI hi
 func renderUI(ip string) {
 
-	t := tui.NewTheme()
-	normal := tui.Style{Bg: tui.ColorWhite, Fg: tui.ColorBlack}
-	t.SetStyle("normal", normal)
-
 	uinput := tui.NewEntry()
 	uinput.SetFocused(true)
 	inputbox := tui.NewHBox(uinput)
@@ -79,13 +85,11 @@ func renderUI(ip string) {
 	inputbox.SetSizePolicy(tui.Expanding, tui.Maximum)
 
 	messages := tui.NewList()
-	messages.AddItems("~ CONNECTED TO " + ip + " ~")
 
 	messages.SetSizePolicy(tui.Expanding, tui.Maximum)
 
-	scrollbar := &scrollArea{tui.NewScrollArea(messages), messages, 0}
-
-	t.SetStyle("label.statusbar", tui.Style{Bg: tui.ColorRed, Fg: tui.ColorWhite})
+	scrollbar := &scrollArea{tui.NewScrollArea(messages), messages, 1}
+	messages.Select(1)
 
 	messagesbox := tui.NewVBox(
 		// messages,
@@ -95,19 +99,10 @@ func renderUI(ip string) {
 
 	messagesbox.SetBorder(true)
 
-	sd := tui.NewLabel("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
-	msgd := tui.NewLabel("Messages" + strconv.Itoa(messages.Size().Y))
-	msgbd := tui.NewLabel("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
-
 	sidebar := tui.NewVBox(
 		tui.NewLabel("Connected"),
 		tui.NewButton(ip),
 		tui.NewSpacer(),
-		tui.NewLabel("-DEBUG-"),
-		tui.NewSpacer(),
-		sd,
-		msgd,
-		msgbd,
 	)
 
 	sidebar.SetBorder(true)
@@ -133,35 +128,9 @@ func renderUI(ip string) {
 		panic(err)
 	}
 
-	ui.SetTheme(t)
-
 	ui.SetKeybinding("Ctrl+C", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
 	ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, -1) })
-	// ui.SetKeybinding("Up", func() {
-	// 	if messages.Selected() >= 0 {
-	// 		messages.Select(messages.Selected() - 1)
-	// 		if -(messages.Selected()-messages.Length())-1 == messages.Selected() && messages.Length() > scrollbar.Size().Y {
-	// 			scrollbar.Scroll(0, -1)
-	// 		}
-	// 	} else {
-	// 		messages.Select(messages.Length() - 1)
-	// 	}
-	// 	sd.SetText("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
-	// 	msgd.SetText("Messages" + strconv.Itoa(messages.Size().Y))
-	// 	msgbd.SetText("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
-	// })
 	ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, 1) })
-	// ui.SetKeybinding("Down", func() {
-	// 	if messages.Length() >= messages.Selected()+2 {
-	// 		messages.Select(messages.Selected() + 1)
-	// 		if messages.Selected() == messages.Length() && messages.Length() > scrollbar.Size().Y {
-	// 			scrollbar.Scroll(0, -1)
-	// 		}
-	// 	}
-	// 	sd.SetText("Scrollbar" + strconv.Itoa(scrollbar.Size().Y))
-	// 	msgd.SetText("Messages" + strconv.Itoa(messages.Size().Y))
-	// 	msgbd.SetText("Messagesbox" + strconv.Itoa(messagesbox.Size().Y))
-	// })
 
 	if err := ui.Run(); err != nil {
 		panic(err)

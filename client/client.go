@@ -16,16 +16,11 @@ func closeConn(conn net.Conn) {
 }
 
 // Loop that fetches messages
-func fetchMsg(conn net.Conn, list *tui.List, scroll *scrollArea) {
+func fetchMsg(conn net.Conn, msgs *tui.List, scroll *scrollArea) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
-
-		list.AddItems(msg)
-
-		// scroll.Scroll(0, 1)
-		if list.Size().Y >= scroll.Size().Y+1 {
-			scroll.Scroll(0, 1)
-		}
+		msgs.AddItems(msg)
+		scroll.Scroll(0, -1)
 	}
 }
 
