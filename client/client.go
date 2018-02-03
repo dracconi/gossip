@@ -16,10 +16,11 @@ func closeConn(conn net.Conn) {
 }
 
 // Loop that fetches messages
-func fetchMsg(conn net.Conn, msgs *tui.List, scroll *scrollArea) {
+func fetchMsg(conn net.Conn, msgs *tui.List, scroll *scrollArea, ui tui.UI) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
 		msgs.AddItems(msg)
+		ui.Update(func() {})
 		scroll.Scroll(0, -1)
 	}
 }
@@ -31,7 +32,7 @@ func sendMsg(conn net.Conn, msg string) {
 
 // Client compartment
 func Client(ipaddr string) {
-	fmt.Println("works client async")
+	fmt.Println("CLIENT STARTED")
 	srv.Conn, _ = net.Dial("tcp", ipaddr)
 	if srv.Conn != nil {
 		renderUI(ipaddr)

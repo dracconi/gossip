@@ -19,13 +19,14 @@ func handleConnection(conn net.Conn) {
 	for {
 		msg, _ := bufio.NewReader(conn).ReadString('\n')
 		if msg == "_CLOSE\n" {
-			// for i, v := range conns {
-			// 	if v == conn {
-			// 		conns = append(conns[:i], conns[i+1:]...)
-			// 		break
-			// 	}
-			// }
+			for i, v := range conns {
+				if v == conn {
+					conns = append(conns[:i], conns[i+1:]...)
+					break
+				}
+			}
 			broadcast("* disconnected " + conn.RemoteAddr().String() + "\n")
+			fmt.Println(conn.RemoteAddr().String() + " disconnected")
 			conn.Close()
 			break
 		}
@@ -38,8 +39,7 @@ func handleConnection(conn net.Conn) {
 
 // Server compartment
 func Server(port string) {
-	fmt.Println("works srv async")
-	fmt.Println(port)
+	fmt.Println("SERVER STARTED ON PORT " + port)
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		panic(err)
@@ -51,10 +51,6 @@ func Server(port string) {
 			panic(err)
 		}
 		conns = append(conns, conn)
-
-		for _, v := range conns {
-			fmt.Println(v.RemoteAddr().String())
-		}
 
 		broadcast("* connected " + conn.RemoteAddr().String() + "\n")
 		go handleConnection(conn)

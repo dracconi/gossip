@@ -121,14 +121,13 @@ func renderUI(ip string) {
 		sendMsg(srv.Conn, e.Text())
 	})
 
-	go fetchMsg(srv.Conn, messages, scrollbar)
-
 	ui, err := tui.New(wrapper)
 	if err != nil {
 		panic(err)
 	}
 
-	ui.SetKeybinding("Ctrl+C", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
+	go fetchMsg(srv.Conn, messages, scrollbar, ui)
+	ui.SetKeybinding("Ctrl+D", func() { sendMsg(srv.Conn, "_CLOSE"); closeConn(srv.Conn); ui.Quit() })
 	ui.SetKeybinding("Up", func() { scrollbar.Scroll(0, -1) })
 	ui.SetKeybinding("Down", func() { scrollbar.Scroll(0, 1) })
 
