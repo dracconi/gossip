@@ -22,3 +22,6 @@ It's depends on only:
 ## Usage
 
 If you have working executable, then turn on the server by `gossip s`, you may specifiy port with `--port [port]`. Then start the client `gossip c [ip address with port]`.
+
+## To-do
+* Convert whole communication to chans rather than some strange things
